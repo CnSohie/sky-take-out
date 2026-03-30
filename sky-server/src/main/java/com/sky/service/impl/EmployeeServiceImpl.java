@@ -1,6 +1,9 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
+import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.entity.Employee;
@@ -8,11 +11,17 @@ import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
+import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Slf4j
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
@@ -39,7 +48,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         //密码比对
-        // TODO 后期需要进行md5加密，然后再进行比对
+        // 对前段的明文密码进行加密处理
+        //password = DigestUtils.md5DigestAsHex(password.getBytes());
         if (!password.equals(employee.getPassword())) {
             //密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
@@ -54,4 +64,37 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employee;
     }
 
+    @Override
+    public PageResult getPage(Integer page, Integer size) {
+        PageHelper.startPage(page, size);
+        List<Employee> userList = employeeMapper.list();
+        Page<Employee> p = (Page<Employee>) userList;
+        return new PageResult(p.getTotal(), p.getResult());
+
+    }
+
+    @Override
+    public void save(Employee employee) {
+        //employee.setPassword(DigestUtils.md5DigestAsHex(employee.getPassword().getBytes()));
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setStatus(1);
+        employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
+        String password = DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes());
+        employee.setCreateUser(1L);
+        employee.setUpdateUser(1L);
+        employeeMapper.save(employee);
+    }
+
+    @Override
+    public void update(Employee employee) {
+
+    }
+
+
+    @Override
+    public Employee getById(Integer id) {
+        Employee employee =employeeMapper.getById(id);
+        return employee;
+    }
 }
