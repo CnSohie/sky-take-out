@@ -27,4 +27,6 @@ public interface EmployeeMapper {
     Employee getById(Integer id);
 
     void update(Employee employee);
+
+    void status(Integer status, Long id);
 }

@@ -95,5 +95,11 @@ public class EmployeeController {
         Employee employee =employeeService.getById(id);
         return Result.success(employee);
     }
+    @PostMapping("status/{status}")
+    public Result status(@PathVariable Integer status, Long id) {
+        log.info("这里是记录"+status);
+        employeeService.status(status,id);
+        return Result.success();
+    }
 
 }
