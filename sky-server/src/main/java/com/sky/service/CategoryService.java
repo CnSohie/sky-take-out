@@ -20,4 +20,5 @@ public interface CategoryService {
 
     void status(Integer status, Long id);
 
+    List<Category> findAll(Integer type);
 }

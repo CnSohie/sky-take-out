@@ -50,4 +50,11 @@ public class CategoryController {
         categoryService.status(status,id);
         return Result.success();
     }
+    @GetMapping("/list")
+    public Result<List<Category>> list(Integer type){
+        log.info("类型为"+type);
+        List<Category>  categories= categoryService.findAll(type);
+        return Result.success(categories);
+
+    }
 }

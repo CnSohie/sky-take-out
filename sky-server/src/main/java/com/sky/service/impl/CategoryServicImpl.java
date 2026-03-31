@@ -47,4 +47,10 @@ public class CategoryServicImpl implements CategoryService
         categoryMapper.status(status, id);
     }
 
+    @Override
+    public List<Category> findAll(Integer type) {
+        List<Category> category = categoryMapper.findAll();
+        return category;
+    }
+
 }

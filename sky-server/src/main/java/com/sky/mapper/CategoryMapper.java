@@ -20,4 +20,6 @@ public interface CategoryMapper {
 
 
     void status(@Param("status") Integer status, @Param("id")  Long id);
+
+    List<Category> findAll();
 }
