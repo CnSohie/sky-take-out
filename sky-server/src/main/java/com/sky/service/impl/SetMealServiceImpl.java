@@ -81,7 +81,6 @@ public class SetMealServiceImpl implements SetMealService {
             log.error("数据库里根本没有 ID 为 {} 的套餐！", id);
             throw new BaseException("数据不存在");
         }
-
         // 2. 查询关联菜品
         List<SetmealDish> setmealDishes = setMealDishMapper.getBySetmealId(id);
 
@@ -119,7 +118,6 @@ public class SetMealServiceImpl implements SetMealService {
             // 为每一个关联菜品设置其所属的套餐 ID
             setmealDish.setSetmealId(setmealId);
         });
-
         // 5. 向套餐菜品关系表批量插入数据
         setMealDishMapper.insertBatch(setmealDishes);
     }
@@ -137,7 +135,6 @@ public class SetMealServiceImpl implements SetMealService {
                     throw new SetmealEnableFailedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
                 }
             });}
-
         }
     Setmeal setmeal = Setmeal.builder()
             .id(id)
