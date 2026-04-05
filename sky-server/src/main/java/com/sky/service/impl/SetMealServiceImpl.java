@@ -17,6 +17,7 @@ import com.sky.mapper.SetMealDishMapper;
 import com.sky.mapper.SetMealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.SetMealService;
+import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 @Slf4j
@@ -45,7 +47,11 @@ public class SetMealServiceImpl implements SetMealService {
     public PageResult QueryPage(SetmealPageQueryDTO setmealPageQueryDTO) {
         PageHelper.startPage(setmealPageQueryDTO.getPage(),setmealPageQueryDTO.getPageSize());
         Page<SetmealVO> page = setMealMapper.pageQuery(setmealPageQueryDTO);
-        log.info("测试第一条数据的分类名称: {}", page.getResult().get(0).getCategoryName());
+        if (page.getResult() != null && !page.getResult().isEmpty()) {
+            log.info("测试第一条数据的分类名称: {}", page.getResult().get(0).getCategoryName());
+        } else {
+            log.info("当前查询结果为空，没有数据可展示");
+        }
         return new PageResult(page.getTotal(),page.getResult());
 
     }
@@ -92,15 +98,27 @@ public class SetMealServiceImpl implements SetMealService {
 
     @Override
     public void deleteWithDish(List<Long> ids) {
-        for (Long id : ids) {
-            SetmealVO setmeal = setMealMapper.findById(id);
-            if (setmeal.getStatus() == StatusConstant.ENABLE) {
-                throw new DeletionNotAllowedException("在售的套餐禁止删除");
-            }
-        }
+        // 1. 【防御性编程】先检查列表是否为空，避免后续浪费性能查数据库
         if (ids == null || ids.isEmpty()) {
             throw new DeletionNotAllowedException("您还没有勾选要删除的数据");
         }
+
+        for (Long id : ids) {
+            SetmealVO setmeal = setMealMapper.findById(id);
+
+            // 2. 【核心修复】必须先判断 setmeal 是否为 null！！！
+            // 报错 NullPointerException 就是因为数据库查不到这个 id，导致 setmeal 为空
+            if (setmeal != null) {
+                if (setmeal.getStatus() == StatusConstant.ENABLE) {
+                    throw new DeletionNotAllowedException("在售的套餐禁止删除");
+                }
+            } else {
+                // 如果查不到，说明该数据可能已被他人删除或 ID 传输有误，直接跳过即可
+                continue;
+            }
+        }
+
+        // 3. 执行删除逻辑
         setMealMapper.deleteByIds(ids);
         setMealDishMapper.deleteBySetmealIds(ids);
     }
@@ -142,5 +160,15 @@ public class SetMealServiceImpl implements SetMealService {
             .updateTime(LocalDateTime.now()) // 如果没做自动填充，手动补一下
             .build();
     setMealMapper.update(setmeal);
+    }
+    @Override
+    public List<Setmeal> list(Setmeal setmeal) {
+        List<Setmeal> list = setMealMapper.list(setmeal);
+        return list;
+    }
+
+    @Override
+    public List<DishItemVO> getDishItemById(Long id) {
+        return setMealMapper.getDishItemBySetmealId(id);
     }
 }

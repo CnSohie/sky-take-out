@@ -34,7 +34,7 @@ public class SetmealVO implements Serializable {
 
     //描述信息
     private String description;
-
+    private List<?> flavors = new ArrayList<>();
     //图片
     private String image;
 

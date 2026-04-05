@@ -53,4 +53,9 @@ public class CategoryServicImpl implements CategoryService
         return category;
     }
 
+    @Override
+    public List<Category> list(Integer type) {
+        return null;
+    }
+
 }
